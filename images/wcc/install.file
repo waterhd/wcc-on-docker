@@ -1,0 +1,28 @@
+#
+# Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
+#
+[ENGINE]
+
+#DO NOT CHANGE THIS.
+Response File Version=1.0.0.0.0
+
+[GENERIC]
+
+#DECLINE_AUTO_UPDATES=true
+DECLINE_SECURITY_UPDATES=true
+SECURITY_UPDATES_VIA_MYORACLESUPPORT=false
+
+#My Oracle Support User Name
+MOS_USERNAME=
+MOS_PASSWORD=
+
+AUTO_UPDATES_LOCATION=
+SOFTWARE_UPDATES_PROXY_SERVER=
+SOFTWARE_UPDATES_PROXY_PORT=
+SOFTWARE_UPDATES_PROXY_USER=
+SOFTWARE_UPDATES_PROXY_PASSWORD=
+
+#Set this variable value to the Installation Type selected. eg: WebCenter Content
+INSTALL_TYPE=WebCenter Content

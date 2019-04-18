@@ -1,0 +1,28 @@
+---
+version: "3.7"
+
+services:
+
+  database:
+    image: oracle/database:12.1.0.2-ee
+    build:
+      network: host
+      context: ./images/database
+    stop_grace_period: 5m
+    env_file: wcc.env
+    ports:
+      - 1530:1521
+    volumes:
+      - ./scripts:/opt/oracle/scripts/setup
+      - ./oradata:/opt/oracle/oradata
+
+  wcc:
+    image: oracle/wccontent:12.2.1.3
+    build:
+      network: host
+      context: ./images/wcc
+    stop_grace_period: 5m
+    env_file: wcc.env 
+    ports:
+      - 7001:7001
+      - 16200:16200
