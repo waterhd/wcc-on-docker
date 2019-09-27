@@ -37,6 +37,10 @@ ENV ORACLE_HOME=/u01/oracle \
 # -------------------------------------------------------------
 COPY install.file oraInst.loc /u01/
 
+# Install missing packages
+# -------------------------------------------------------------
+RUN yum install -y unzip hostname && rm -rf /var/cache/yum
+
 #Install packages and adjust file permissions, go to /u01 as user 'oracle' to proceed with WLS installation
 # -------------------------------------------------------------
 RUN mkdir -p /u01/oracle/logs && chmod a+xr /u01
