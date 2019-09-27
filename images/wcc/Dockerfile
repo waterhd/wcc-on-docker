@@ -13,15 +13,15 @@ FROM oracle/fmw-infrastructure:12.2.1.3
 # -------------------------------------------------------------
 USER root
 
-ENV ORACLE_HOME=/u01/oracle \
-	USER_MEM_ARGS="-Djava.security.egd=file:/dev/urandom" \
-	MW_HOME=/u01/oracle \
-	UCM_ORACLE_HOME=/u01/oracle/wccontent \
-	WLS_HOME=/u01/oracle/wlserver/server \
-	WL_HOME=/u01/oracle/wlserver \
-	DOMAIN_ROOT=/u01/oracle/user_projects/domains \
-	PATH=$PATH:$JAVA_HOME/bin:/u01/oracle/oracle_common/common/bin \
-	CONTAINER_SCRIPT_DIR=/u01/oracle/container-scripts \
+ENV ROOT_HOME=/u01
+ENV	ORACLE_HOME=$ROOT_HOME/oracle
+ENV	MW_HOME=$ORACLE_HOME
+ENV	WL_HOME=$ORACLE_HOME/wlserver
+ENV	WLS_HOME=$WL_HOME/server \
+	UCM_ORACLE_HOME=$ORACLE_HOME/wccontent \
+	DOMAIN_ROOT=$ORACLE_HOME/user_projects/domains \
+	PATH=$PATH:$JAVA_HOME/bin:$ORACLE_HOME/oracle_common/common/bin \
+	CONTAINER_SCRIPT_DIR=$ORACLE_HOME/container-scripts \
 	CONTENT_PKG=fmw_12.2.1.3.0_wccontent_Disk1_1of1.zip \
 	CONTENT_SHA1=945b1514a7f8fcc48484939458bc6898b0a37cdc \
 	CONTENT_JAR=fmw_12.2.1.3.0_wccontent.jar \
@@ -31,7 +31,9 @@ ENV ORACLE_HOME=/u01/oracle \
 	WCCONTENT_SSL_PORT=9002 \
 	LANG=en_US.UTF8 \
 	LC_ALL=en_US.UTF8 \
-	NLS_LANG=AMERICAN_AMERICA
+	NLS_LANG=AMERICAN_AMERICA \
+	USER_MEM_ARGS="-Djava.security.egd=file:/dev/urandom"
+
 
 # Copy packages and scripts
 # -------------------------------------------------------------
@@ -43,7 +45,7 @@ RUN yum install -y unzip hostname && rm -rf /var/cache/yum
 
 #Install packages and adjust file permissions, go to /u01 as user 'oracle' to proceed with WLS installation
 # -------------------------------------------------------------
-RUN mkdir -p /u01/oracle/logs && chmod a+xr /u01
+RUN mkdir -p $ORACLE_HOME/logs && chmod a+xr $ROOT_HOME
 
 # Install as user
 # -------------------------------------------------------------
@@ -57,25 +59,24 @@ RUN curl -fLO# "$BASE_URL/$CONTENT_PKG" \
  && printf "%s *%s\n" $CONTENT_SHA1 $CONTENT_PKG | sha1sum -c \
  && unzip $CONTENT_PKG \
  && $JAVA_HOME/bin/java -jar $CONTENT_JAR -silent -force -novalidation -ignoreSysPrereqs \
-      -responseFile /u01/install.file -invPtrLoc /u01/oraInst.loc -jreLoc $JAVA_HOME ORACLE_HOME=$ORACLE_HOME \
- && rm -rf $CONTENT_JAR $CONTENT_PKG /u01/oraInst.loc /u01/install.file
+	-responseFile $ROOT_HOME/install.file -invPtrLoc $ROOT_HOME/oraInst.loc -jreLoc $JAVA_HOME ORACLE_HOME=$ORACLE_HOME \
+	&& rm -rf $CONTENT_JAR $CONTENT_PKG oraInst.loc install.file fmw_12213_readme.htm
 
 WORKDIR $ORACLE_HOME
 
+# Copy scripts and make them executable
 USER root
 COPY --chown=oracle wait-for createDomain.py createDomainAndStart.sh $CONTAINER_SCRIPT_DIR/
-
-# Make scripts executable
 RUN chmod +x $CONTAINER_SCRIPT_DIR/*.sh
 USER oracle
 
 # Set defaults
-ENV ADMIN_USERNAME=weblogic DB_PORT=1521 DOMAIN_NAME=wcc RUN_RCU=1 WAIT_TIMEOUT=1800 \
+ENV WAIT_TIMEOUT=1800 \
     MANAGED_SERVER=UCM_server1 \
     DOMAIN_TEMPLATE="Oracle Universal Content Management - Content Server"
 
-# Define default command to start bash.
+# Define default command to start bash
 CMD ["createDomainAndStart.sh"]
 
-# Expose all Ports
+# Expose all ports
 EXPOSE $ADMIN_PORT $ADMIN_SSL_PORT $WCCONTENT_PORT $WCCONTENT_SSL_PORT
