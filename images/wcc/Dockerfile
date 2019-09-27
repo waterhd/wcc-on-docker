@@ -62,10 +62,12 @@ RUN curl -fLO# "$BASE_URL/$CONTENT_PKG" \
 
 WORKDIR $ORACLE_HOME
 
+USER root
 COPY --chown=oracle wait-for createDomain.py createDomainAndStart.sh $CONTAINER_SCRIPT_DIR/
 
 # Make scripts executable
 RUN chmod +x $CONTAINER_SCRIPT_DIR/*.sh
+USER oracle
 
 # Set defaults
 ENV ADMIN_USERNAME=weblogic DB_PORT=1521 DOMAIN_NAME=wcc RUN_RCU=1 WAIT_TIMEOUT=1800 \
